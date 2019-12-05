@@ -1,0 +1,21 @@
+version: '3'
+services:
+  web:
+    build: .
+    volumes:
+      - .:/app
+    links:
+      - mysql
+    ports:
+      - "5000:5000"
+  mysql:
+    image: "mysql:5.6"
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+#      MYSQL_DATABASE: found_lost
+#      MYSQL_USER: root
+#      MYSQL_PASSWORD: root
+    volumes:
+      - ./docker/data/db:/var/lib/mysql
