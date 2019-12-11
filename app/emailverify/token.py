@@ -2,6 +2,7 @@ import datetime
 from run import *
 import jwt
 
+
 def generate_confirmation_token(email):
     token = jwt.encode({'email': email, 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
     return token

@@ -23,3 +23,7 @@ six==1.13.0
 SQLAlchemy==1.3.11
 Werkzeug==0.16.0
 flask-script
+flask-expects-json
+celery
+redis
+gunicorn

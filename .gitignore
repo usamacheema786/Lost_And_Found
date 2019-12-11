@@ -1,0 +1,6 @@
+config_default.py
+migrations
+venv
+__pycache__
+imagesUpload
+docker

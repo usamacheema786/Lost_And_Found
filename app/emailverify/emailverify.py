@@ -1,13 +1,18 @@
 from flask_mail import Message
 
-from run import app, mail
+from run import app, mail, make_celery
+
+celery = make_celery(app)
 
 
-def send_email(to, subject, template):
-    msg = Message(
-        subject,
-        recipients=[to],
-        html=template,
-        sender=app.config['MAIL_DEFAULT_SENDER']
-    )
-    mail.send(msg)
+@celery.task
+def send_async_email(email,subject,link):
+    """Background task to send an email with Flask-Mail."""
+    msg = Message(subject,
+                  sender=app.config['MAIL_DEFAULT_SENDER'],
+                  recipients=[email],
+                  html = link)
+    msg.body = "Your confirmation link is here: "
+    with app.app_context():
+        mail.send(msg)
+
