@@ -2,15 +2,15 @@ FROM python:3.7
 
 EXPOSE 5000
 
-WORKDIR /app
+WORKDIR /Lost_And_Found
 
-ADD config.py /app
+# ADD config.py /app
 
-COPY ./requirements.txt /app/requirements.txt
+COPY ./requirements.txt /Lost_And_Found/requirements.txt
 
 RUN pip install -r requirements.txt
 
-COPY . /app
+COPY . /Lost_And_Found
 # CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
 ENTRYPOINT [ "python" ]
 

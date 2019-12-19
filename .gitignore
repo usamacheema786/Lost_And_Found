@@ -1,6 +1,6 @@
-config_default.py
+config.py
 migrations
 venv
-__pycache__
+*.pyc
 imagesUpload
 docker

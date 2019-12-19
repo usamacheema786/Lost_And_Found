@@ -1,2 +1,2 @@
-from app.models.models import *
+from app import models
 

@@ -11,7 +11,7 @@ item_schema = {
 user_schema = {
     'properties': {
         'email': {'type': 'string'},
-        'password': {'type': 'string','minLength': 6 }
+        'password': {'type': 'string', 'minLength': 6}
     },
     'required': ['email', 'password']
 }

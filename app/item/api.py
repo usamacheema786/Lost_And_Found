@@ -7,8 +7,9 @@ from werkzeug.utils import secure_filename
 from app.common.decorator import token_required, validate_schema, validate_json
 from app.common.schema import item_schema
 from app.item import itembp
-from app.models import items
-from run import app, db
+from app.models.models import items
+from app import db
+from run import app
 
 basedir = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.abspath(os.path.join(basedir, "..", "..", "imagesUpload"))
@@ -70,10 +71,10 @@ def add_post(current_user):
 def all_posts(current_user):
     """"function to view all post"""
     if not current_user:
-        return jsonify({"message": "please login first to perform this operation"})
+        return jsonify({"message": "please login first to perform this operation"}),401
     _Items = items.query.all()
     if not _Items:
-        return jsonify({"message": "No item exist"})
+        return jsonify({"message": "No item exist"}),404
     data = []
     for item in _Items:
         item_data = item.to_json()
@@ -150,4 +151,5 @@ def update_post(current_user, id):
                 return jsonify({"message": "Post cannot be updated"}), 403
         else:
             return jsonify({"message": "you cannot update this Post"}), 403
+
 

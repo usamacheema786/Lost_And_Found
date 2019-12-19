@@ -19,7 +19,7 @@ def token_required(f):
         if "access-token" in request.headers:
             token = request.headers["access-token"]
         if not token:
-            return jsonify({"message": "Token is miising"})
+            return jsonify({"message": "Token is miising"}),401
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"])
             current_user = users.query.filter_by(id=data["id"]).first()

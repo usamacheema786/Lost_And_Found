@@ -1,37 +1,7 @@
-from celery import Celery
-from flask import Flask
-from flask_mail import Mail
-from flask_sqlalchemy import SQLAlchemy
+from app import create_app
+# from Lost_And_Found.config import ProductionConfig
 
-from config import ProductionConfig
-
-
-def create_app(config_object=ProductionConfig):
-    app = Flask(__name__)
-    app.config.from_object(ProductionConfig)
-    return app
-
-
-def make_celery(app):
-    celery = Celery(
-        app.import_name,
-        backend = app.config['CELERY_RESULT_BACKEND'],
-        broker = app.config['CELERY_BROKER_URL']
-    )
-    celery.conf.update(app.config)
-
-    class ContextTask(celery.Task):
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return self.run(*args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
-
-app = create_app(ProductionConfig)
-mail = Mail(app)
-db = SQLAlchemy(app)
+app = create_app('config.ProductionConfig')
 
 
 if __name__ == "__main__":
@@ -40,5 +10,4 @@ if __name__ == "__main__":
 
     app.register_blueprint(userbp)
     app.register_blueprint(itembp)
-
     app.run(host="0.0.0.0", debug=True)

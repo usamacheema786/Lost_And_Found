@@ -1,5 +1,5 @@
 import datetime
-from run import *
+from run import app
 import jwt
 
 

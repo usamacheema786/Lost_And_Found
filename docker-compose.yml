@@ -3,7 +3,7 @@ services:
   web:
     build: .
     volumes:
-      - .:/app
+      - .:/Lost_And_Found
     links:
       - mysql
       - redis
@@ -30,7 +30,7 @@ services:
     entrypoint: celery
     command: -A app.emailverify.emailverify.celery worker --loglevel=DEBUG
     volumes:
-      - .:/app
+      - .:/Lost_And_Found
     links:
       - redis
     depends_on:

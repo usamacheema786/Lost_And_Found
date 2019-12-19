@@ -2,16 +2,17 @@ import datetime
 import jwt
 import re
 
-from flask import request, jsonify, make_response, url_for, Blueprint
+from flask import request, jsonify, make_response, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.common.decorator import token_required, validate_json, validate_schema
 from app.common.schema import user_schema
 from app.emailverify.emailverify import send_async_email
 from app.emailverify.token import generate_confirmation_token, confirm_token
-from app.models import users
+from app.models.models import users
 from app.user import userbp
-from run import app, db
+from app import db
+from run import app
 
 
 @userbp.route("/user/register", methods=["POST"])
@@ -78,7 +79,7 @@ def login():
             )
             return jsonify({"token": token.decode("UTF-8")}), 200
         else:
-            return jsonify({"message": "please confirm your email before login"})
+            return jsonify({"message": "please confirm your email before login"}),401
     return make_response(
         "incorrect login detail",
         401,

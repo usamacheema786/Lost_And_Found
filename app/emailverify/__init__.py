@@ -1,3 +1,3 @@
-from app.emailverify.emailverify import *
-from app.emailverify.token import *
+from app.emailverify import *
+from app.emailverify import *
 
