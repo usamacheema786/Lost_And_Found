@@ -3,7 +3,7 @@ from flask import Flask
 from flask_mail import Mail
 from flask_sqlalchemy import SQLAlchemy
 
-# from Lost_And_Found.config import ProductionConfig
+# from config import ProductionConfig
 
 mail = Mail()
 db = SQLAlchemy()
@@ -13,9 +13,10 @@ mail.init_app(app)
 db.init_app(app)
 db.app = app
 
-def create_app(config_name):
+
+def create_app(prod):
     app = Flask(__name__)
-    app.config.from_object('config.ProductionConfig')
+    app.config.from_object(prod)
 
     mail.init_app(app)
     db.init_app(app)
@@ -39,3 +40,4 @@ def make_celery(app):
 
     celery.Task = ContextTask
     return celery
+

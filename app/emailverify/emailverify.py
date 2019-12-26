@@ -1,7 +1,11 @@
 from flask_mail import Message
+try:
+    from run import app
+    from app import mail, make_celery
+except ImportError:
+    from Lost_And_Found.run import app
+    from Lost_And_Found.app import mail, make_celery
 
-from run import app
-from app import mail, make_celery
 
 celery = make_celery(app)
 

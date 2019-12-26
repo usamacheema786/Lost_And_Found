@@ -1,5 +1,7 @@
-from app import db
-
+try:
+    from app import db
+except ImportError:
+    from Lost_And_Found.app import db
 
 class users(db.Model):
     __tablename__ = 'users'

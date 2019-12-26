@@ -3,13 +3,20 @@ import json
 
 from flask import request, jsonify
 from werkzeug.utils import secure_filename
-
-from app.common.decorator import token_required, validate_schema, validate_json
-from app.common.schema import item_schema
-from app.item import itembp
-from app.models.models import items
-from app import db
-from run import app
+try:
+    from app.common.decorator import token_required, validate_schema, validate_json
+    from app.common.schema import item_schema
+    from app.item import itembp
+    from app.models.models import items
+    from app import db
+    from run import app
+except ImportError:
+    from Lost_And_Found.app.common.decorator import token_required, validate_schema, validate_json
+    from Lost_And_Found.app.common.schema import item_schema
+    from Lost_And_Found.app.item import itembp
+    from Lost_And_Found.app.models.models import items
+    from Lost_And_Found.app import db
+    from Lost_And_Found.run import app
 
 basedir = os.path.dirname(__file__)
 UPLOAD_FOLDER = os.path.abspath(os.path.join(basedir, "..", "..", "imagesUpload"))

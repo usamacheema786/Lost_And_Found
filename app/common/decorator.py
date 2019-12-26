@@ -7,9 +7,14 @@ from flask_expects_json import validate
 
 from werkzeug.exceptions import BadRequest
 from werkzeug.routing import ValidationError
-
-from app.models.models import users
-from run import app
+try:
+    from app.emailverify.token import confirm_token
+    from app.models.models import users
+    from run import app
+except ImportError:
+    from Lost_And_Found.app.emailverify.token import confirm_token
+    from Lost_And_Found.app.models.models import users
+    from Lost_And_Found.run import app
 
 
 def token_required(f):
@@ -18,11 +23,13 @@ def token_required(f):
         token = None
         if "access-token" in request.headers:
             token = request.headers["access-token"]
+        else:
+            jsonify({'message':"token tag is missing"}),400
         if not token:
             return jsonify({"message": "Token is miising"}),401
         try:
-            data = jwt.decode(token, app.config["SECRET_KEY"])
-            current_user = users.query.filter_by(id=data["id"]).first()
+            data = confirm_token(token)
+            current_user = users.query.filter_by(id=data).first()
         except:
             return jsonify({"message": "Invalid token"}), 401
 

@@ -4,15 +4,24 @@ import re
 
 from flask import request, jsonify, make_response, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
-
-from app.common.decorator import token_required, validate_json, validate_schema
-from app.common.schema import user_schema
-from app.emailverify.emailverify import send_async_email
-from app.emailverify.token import generate_confirmation_token, confirm_token
-from app.models.models import users
-from app.user import userbp
-from app import db
-from run import app
+try:
+    from app.common.decorator import token_required, validate_json, validate_schema
+    from app.common.schema import user_schema
+    from app.emailverify.emailverify import send_async_email
+    from app.emailverify.token import generate_confirmation_token, confirm_token
+    from app.models.models import users
+    from app.user import userbp
+    from app import db
+    from run import app
+except ImportError:
+    from Lost_And_Found.app.common.decorator import token_required, validate_json, validate_schema
+    from Lost_And_Found.app.common.schema import user_schema
+    from Lost_And_Found.app.emailverify.emailverify import send_async_email
+    from Lost_And_Found.app.emailverify.token import generate_confirmation_token, confirm_token
+    from Lost_And_Found.app.models.models import users
+    from Lost_And_Found.app.user import userbp
+    from Lost_And_Found.app import db
+    from Lost_And_Found.run import app
 
 
 @userbp.route("/user/register", methods=["POST"])
@@ -24,6 +33,7 @@ def register_user():
     if not re.match(r"[^@]+@[^@]+\.[^@]+", data["email"]):
         return jsonify({"message": "provide correct email "}), 400
     user = users.query.filter_by(email=data["email"]).first()
+    con = str(user.confirmed)
     if not user:
         hash_password = generate_password_hash(data["password"])
         new_user = users(email=data["email"], password=hash_password, confirmed=0)
@@ -34,7 +44,7 @@ def register_user():
         subject = "Please confirm your email"
         send_async_email.delay(new_user.email, subject, confirm_url)
         return jsonify({"message": "A confirmation email has been sent via email"}), 200
-    return jsonify({"message": "Email already registered"}), 409
+    return jsonify({"message": "Email already registered "+con}), 409
 
 
 @userbp.route("/change_password", methods=["PUT"])
@@ -64,27 +74,14 @@ def login():
         )
     user = users.query.filter_by(email=auth_data.username).first()
     if not user:
-        return make_response(
-            "incorrect email", 401, {"WWW-Authenticate": 'Basic realm="Login required"'}
-        )
-
+        return jsonify({"message": "email does not exist "}),401
     if check_password_hash(user.password, auth_data.password):
         if user.confirmed:
-            token = jwt.encode(
-                {
-                    "id": user.id,
-                    "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
-                },
-                app.config["SECRET_KEY"],
-            )
+            token = generate_confirmation_token(str(user.id))
             return jsonify({"token": token.decode("UTF-8")}), 200
         else:
             return jsonify({"message": "please confirm your email before login"}),401
-    return make_response(
-        "incorrect login detail",
-        401,
-        {"WWW-Authenticate": 'Basic realm="Login required"'},
-    )
+    return jsonify({"message": "incorrect password"}),401
 
 
 @userbp.route("/confirm/<token>")

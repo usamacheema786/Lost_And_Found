@@ -1,69 +1,68 @@
 import base64
 import json
-import pytest
 import requests
-#
-from Lost_And_Found.app.tests.test_base import BaseTestCase
+
+import pytest
+from mock import patch
+
+from Lost_And_Found.app.models.models import users, items
+from Lost_And_Found.app.tests.conftest import db
 
 
-class UserTest(BaseTestCase):
-    url = 'http://127.0.0.1:5000'  # The root url of the flask app
+def test_register_user(app_client, new_user):
 
-    @pytest.fixture(scope='module')
-    def token_re(self):
-        usrPass = "mr.mucheema1@gmail.com:123456"
-        data_bytes = usrPass.encode("utf-8")
-        b64Val = base64.b64encode(data_bytes)
+    data = {"email": "zib77707@eveav.com", "password": "123456"}
+    payload = json.dumps(data)
+    headers = {"Content-Type": "application/json"}
+    response = app_client.post("/user/register", data=payload, headers=headers)
+    print(response.json)
+    assert response.status_code == 409
 
-        headers = {
-            'Content-Type': "application/json",
-            'Authorization': "Basic %s" % b64Val.decode("utf-8")
-        }
-        payload = ''
 
-        response = requests.request("GET", self.url + '/user/login', data=payload, headers=headers)
-        return response.json()
+def test_login_user(app_client):
+    user_pass = "zib77707@eveav.com:123456"
+    data_bytes = user_pass.encode("utf-8")
+    b64val = base64.b64encode(data_bytes)
 
-    def test_register_user(self):
-        data = {"email": "muhammad.usama1@wanclouds.net", "password": "123456"}
-        payload = json.dumps(data)
-        headers = {
-            'Content-Type': "application/json"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Basic %s" % b64val.decode("utf-8"),
+    }
+    payload = ""
+    response = app_client.get("/user/login", data=payload, headers=headers)
+    print(response.json)
+    assert response.status_code == 200
 
-        }
-        response = requests.request("POST", self.url + '/user/register', data=payload, headers=headers)
-        assert response.status_code == 200
 
-    def test_login_user(self):
-        user_pass = "muhammad.usama@wanclouds.net:123456"
-        data_bytes = user_pass.encode("utf-8")
-        b64val = base64.b64encode(data_bytes)
+def test_ge_all_post(app_client, get_token):
+    print(get_token["token"])
+    headers = {"access-token": get_token["token"]}
+    response = app_client.get("/post", headers=headers)
+    assert response.status_code == 404
 
-        headers = {
-            'Content-Type': "application/json",
-            'Authorization': "Basic %s" % b64val.decode("utf-8")
-        }
-        payload = ''
 
-        response = requests.request("GET", self.url + '/user/login', data=payload, headers=headers)
-        assert response.status_code == 401
+def test_search_item(app_client, get_token):
+    print(get_token["token"])
+    headers = {"access-token": get_token["token"]}
+    response = app_client.get("/post/laptop", headers=headers)
+    assert response.status_code == 404
 
-    def test_ge_all_post(self, token_re):
-        headers = {'access-token': token_re['token']}
-        response = requests.request("GET", self.url + '/post', headers=headers)
-        assert response.status_code == 404
 
-    def test_search_item(self, token_re):
-        headers = {'access-token': token_re['token']}
-        response = requests.request("GET", self.url + '/post/loptop', headers=headers)
-        assert response.status_code == 404
+def test_add_post(app_client,get_token):
 
-        # def test_new_user(new_user):
-        #     """
-        #     GIVEN a User model
-        #     WHEN a new User is created
-        #     THEN check the email, hashed_password, authenticated, and role fields are defined correctly
-        #     """
-        #     assert new_user.email == 'jfs33635@eveav.com'
-        #     assert new_user.hashed_password != '1234'
-        #     assert not new_user.authenticated
+    payload = "------WebKitFormBoundary7MA4YWxkTrZu0gW\r\nContent-Disposition: form-data; name=\"data\"\r\n\r\n{\"name\": \"laptop\", \"description\": \"hp zbook\", \"category\":\"lost\", \"location\": \"comsats\", \"date\": \"30-12-19\"}\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--"
+    headers = {
+        'content-type': "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+        'access-token': get_token["token"],
+        'Content-Type': "multipart/form-data; boundary=--------------------------099924278551725800536919",
+
+    }
+
+    # data = {"name": "laptop", "description": "hp zbook", "category":"lost", "location": "comsats", "date": "30-12-19"}
+    # payload = json.dumps(data)
+    # headers = {"Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW",
+    #            "access-token": get_token["token"]
+    #            }
+    response = app_client.post("/post", data=payload, headers=headers)
+    print(response.json)
+    assert response.status_code == 201

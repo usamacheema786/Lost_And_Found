@@ -1,19 +1,53 @@
+import base64
+
 import pytest
-from Lost_And_Found.app import create_app, db
+from flask import Flask
+from werkzeug.security import generate_password_hash
+
 from Lost_And_Found.config import TestingConfig
+from Lost_And_Found.app import create_app, db
+from Lost_And_Found.app.models.models import users, items
 
-@pytest.fixture
-def app():
-    app = create_app('testing')
-    app_context = app.test_request_context()
+@pytest.fixture(scope="module")
+def app_client():
+
+    flask_app = create_app(TestingConfig)
+    db.init_app(flask_app)
+    app_context = flask_app.test_request_context()
     app_context.push()
-    app.config.from_object(TestingConfig)
-    app.testing = True
+    flask_app.config.from_object(TestingConfig)
+    flask_app.testing = True
+    client = flask_app.test_client()
+    print("app......")
+    with flask_app.app_context():
+        from Lost_And_Found.app.user import userbp
+        from Lost_And_Found.app.item import itembp
 
-    with app.app_context():
-        # alternative pattern to app.app_context().push()
-        # all commands indented under 'with' are run in the app context
+        flask_app.register_blueprint(userbp)
+        flask_app.register_blueprint(itembp)
+        from Lost_And_Found.app.models.models import users, items
+
         db.create_all()
-        yield app  # Note that we changed return for yield, see below for why
-        # db.drop_all()
-        return app
+        yield client
+        db.drop_all()
+
+
+@pytest.fixture(scope="module")
+def new_user(app_client):
+    user = users("zib77707@eveav.com", generate_password_hash("123456"), 1)
+    db.session.add(user)
+    db.session.commit()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def get_token(app_client):
+    usrPass = "zib77707@eveav.com:123456"
+    data_bytes = usrPass.encode("utf-8")
+    b64Val = base64.b64encode(data_bytes)
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Basic %s" % b64Val.decode("utf-8"),
+    }
+    payload = ""
+    response = app_client.get("/user/login", data=payload, headers=headers)
+    return response.json
